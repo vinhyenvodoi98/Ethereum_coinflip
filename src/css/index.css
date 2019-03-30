@@ -1,0 +1,32 @@
+.everycenter{
+    text-align: center
+}
+
+.flipNow{
+    padding: 50px;
+    font-weight: 600;
+}
+
+.guess{
+
+}
+
+.guesswhat{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 60px 350px 60px 350px;
+    /* align-content: center; */
+}
+
+.buttonsap{
+    padding: 8px 25px 8px 25px;
+}
+
+.buttonngua{
+    padding: 8px 17px 8px 17px;
+}
+
+.ketqua{
+    padding: 30px;
+}
