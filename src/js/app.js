@@ -11,14 +11,12 @@ function ngua(){
     choice = false;
     $('#chon span').text(' Ngửa');
 }
-
-function flipnow(){
-    let contract = App.contract;
-    contract.flip(choice, { value: web3.toWei(1, 'ether')},(err,result) =>{
-        console.log(result)
-    })
+ 
+function flip(){
+    console.log("beggin flip");
+    App.filpnow();
 }
-
+// function 
 //set up web3
 App = {
     web3Provider: null,
@@ -37,10 +35,10 @@ App = {
     },
 
     initContract: function() {
-        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [    {      "name": "",      "type": "bool"    }  ],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"}
+        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [    {      "name": "",      "type": "bool"    }  ],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
           ]);
-        App.contract = CoinflipContract.at("0x281763afe37612da885bf65b36bfa1246f0ea174")
-        // $(document).on('click', '.bet-number', App.handleBet);
+        App.contract = CoinflipContract.at("0xfecda425b0c8a2e86ad7e485093e6a8df4a89958")
+        // $(document).on('click', '.flip', App.filpnow);
         setInterval(App.updateState, 1000);
         App.updateState();
     },
@@ -64,17 +62,18 @@ App = {
           });
     },
 
-    // filpnow: function(event) {
-    // event.preventDefault();
-
-    // var betNumber = parseInt($(event.target).text());
-    // let contract = App.contract;
-    // contract.bet(betNumber, { value: web3.toWei(1, 'ether') }, function (err, result) {
-    //     if (!err) console.log(result);
-    //     else console.error(err);
-    // })
-    // console.log("bet Number = " + betNumber);
-    // }
+    // TODO fix this contract.flip
+    filpnow: async function() {
+        let contract = App.contract;
+        console.log("pening");
+        let result = await contract.flip(choice, { value: web3.toWei(0.00001, 'ether')})
+        if (result){
+            $("sapngua").text("Sấp");
+        }else{
+            $("sapngua").text("Ngửa");
+        }
+        console.log("success");
+    }
 };
 
 $(function() {
