@@ -12,7 +12,9 @@ contract CoinFlip {
         consecutiveWins = 0;
     }
 
-    function flip(bool _guess) public payable returns (bool) {
+    // try to use other random algorithm
+    function flip(bool _guess ) public payable returns (bool) {
+        // require(msg.value > ); //set require value
         uint256 blockValue = uint256(blockhash(block.number-1));
 
         if (lastHash == blockValue) {
@@ -32,15 +34,20 @@ contract CoinFlip {
         }
     }
 
+    // view how many time you win
     function viewConsecutivewins() public view returns(uint256) {
         return consecutiveWins;
     }
 
-    //TODO trying to write collectCoin when people lose
+    // ViewBalance of this contract
+    function viewBalance() public view returns (uint256){
+        return address(this).balance;
+    }
     
+    // CollectCoin function
     function collectCoin() public{
-        require(msg.sender = ower);
-        ower.transfer(address(this).);
+        require(msg.sender == owner);
+        owner.transfer(address(this).balance);
     }
 
 
