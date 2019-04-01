@@ -1,5 +1,24 @@
+h2 {
+	display: inline;
+	position: relative;
+	font: 65px Helvetica, Sans-Serif;
+	letter-spacing: -5px;
+	color: rgba(0,0,255,0.5); 
+}
+
+h2:after {
+	content: "Flip now";
+	position: absolute; left: -4px; top: 2px;
+	color: rgba(255,0,0,0.5);   
+}
+
 .everycenter{
-    text-align: center
+    border-radius: 30px;
+    text-align: center;
+    background: #C9E4D6;
+    width: 480px;
+    height: 600px;
+    margin-top: 100px;
 }
 
 .flipNow{
@@ -7,16 +26,10 @@
     font-weight: 600;
 }
 
-.guess{
-
-}
-
 .guesswhat{
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    padding: 60px 350px 60px 350px;
-    /* align-content: center; */
 }
 
 .buttonsap{
