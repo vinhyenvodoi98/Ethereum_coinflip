@@ -1,5 +1,6 @@
 
 var choice;
+var waiting;
 
 // function chọn sấp hoặc ngửa
 function sap(){ 
@@ -13,6 +14,7 @@ function ngua(){
 }
  
 function flip(){
+    waiting = true;
     console.log("beggin flip");
     App.filpnow();
 }
@@ -35,10 +37,9 @@ App = {
     },
 
     initContract: function() {
-        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [    {      "name": "",      "type": "bool"    }  ],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
+        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
           ]);
-        App.contract = CoinflipContract.at("0xfecda425b0c8a2e86ad7e485093e6a8df4a89958")
-        // $(document).on('click', '.flip', App.filpnow);
+        App.contract = CoinflipContract.at("0xc294e8ba73f1288e1b4687c0739987b6bebf5c15")
         setInterval(App.updateState, 1000);
         App.updateState();
     },
@@ -47,33 +48,47 @@ App = {
         let contract = App.contract;
         let coinbase = web3.eth.coinbase;
         
-        web3.eth.getBalance(coinbase, function (err, result) {
+        web3.eth.getBalance(coinbase, function (err, result) { 
             if (!err) {
-            $("#account").text(coinbase);
-            $("#balance ").text( web3.fromWei(result.toNumber()));
+                $("#account").text(coinbase);
+                $("#balance ").text( web3.fromWei(result.toNumber()));
             }
             else console.error(err);
         });
+
         contract.viewConsecutivewins((err, result) => {
             if (!err) {
               $("#wincount").text(result.toNumber());
             }
             else console.error(err);
-          });
+        });
+
+        contract.viewResult((e,r)=>{
+            if( r ==  1 ){
+                $("#sapngua").text("sấp");
+            }else if( r == 2 ){
+                $("#sapngua").text("ngửa");
+            }
+            // TODO try setup waiting
+            // if(waiting){
+            //     $("#sapngua").text("Hãy đợi trong giây lát ...");
+            // }
+        })
     },
 
-    // TODO fix this contract.flip
-    filpnow: async function() {
+    filpnow: function() {
         let contract = App.contract;
         console.log("pening");
-        let result = await contract.flip(choice, { value: web3.toWei(0.00001, 'ether')})
-        if (result){
-            $("sapngua").text("Sấp");
-        }else{
-            $("sapngua").text("Ngửa");
-        }
-        console.log("success");
+        contract.flip(choice, { value: web3.toWei(0.00001, 'ether')},(err,result) =>{
+            console.log(result)
+            if (result){
+                $("sapngua").text("Sấp");
+            }else{
+                $("sapngua").text("Ngửa");
+            }
+        })
     }
+    
 };
 
 $(function() {
