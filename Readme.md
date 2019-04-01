@@ -1,13 +1,19 @@
-#This project setup enviroment to deploy smartcontract to Ropsten
+# Play CoinFlip v1.0
+
+**Introduction**
+In this game you will betting 0.0001 ether to play and choice HEADS and TAILS if you correct outcome 10 times you can take 1 ether
 
 **Install**
 
-Xoa file package-lock.js
-
     npm install
 
+**How to run**
 
-Thay đổi file muôn deploy bằng cách thay trong file SimpleStorage.sol 
+    npm run dev
+
+**config version of solidity compiler**
+
+Thay đổi file muốn deploy bằng cách thay trong file SimpleStorage.sol 
 Thay đổi compiler version trong truffle.js 
     
     solc:{
@@ -25,7 +31,7 @@ Thay đổi compiler version trong truffle.js
     provider: function(){
                 return new HDWalletProvider(
                     mnemonic,
-                    `https://ropsten.infura.io/v3/c9a0f45995234454849d7a2d3c9124ed`
+                    `https://ropsten.infura.io/v3/${prosse}`
                 )
             },
     
