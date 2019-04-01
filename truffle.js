@@ -1,14 +1,5 @@
 require('dotenv').config();
 const HDWalletProvider = require('truffle-hdwallet-provider');
-// var mnemonic = "apple banana coffie apple banana coffie apple banana coffie"
-var mnemonic = "soup click poverty tooth struggle cash heart have supply sport clean quality"
-// var provider = new HDWalletProvider (mnemonic,"https://ropsten.infura.io/v3/c9a0f45995234454849d7a2d3c9124ed")
-
-// TODO HD Wallet
-// ==================
-// Mnemonic:      apple banana coffie
-// Base HD Path:  m/44'/60'/0'/0/{account_index}
-
 
 module.exports = {
 
@@ -16,8 +7,8 @@ module.exports = {
         ropsten: {
             provider: ()=>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://ropsten.infura.io/v3/33067fd895d4482fa44cbe0f5049e96b"
+                    process.env.mnemonic,
+                    `https://ropsten.infura.io/v3/${process.env.INFURA_API}`
                 )
             ,
             gas: 4712388,
@@ -28,7 +19,7 @@ module.exports = {
             provider: function() {
                 return new HDWalletProvider(
                     mnemonic,
-                    "https://rinkeby.infura.io/v3/33067fd895d4482fa44cbe0f5049e96b"
+                    `https://rinkeby.infura.io/v3/${process.env.INFURA_API}`
                     )},
             network_id: "*"
         },
