@@ -18,6 +18,6 @@
   "license": "ISC",
   "dependencies": {
     "lite-server": "^2.4.0",
-    "web3": "^1.0.0-beta.51"
+    "web3": "github:ethereum/web3.js"
   }
 }
