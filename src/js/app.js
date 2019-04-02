@@ -1,18 +1,26 @@
-
+var address = '0x0d1fd2be10d5f6ffe4eb92c67eb30343e2aab0e3';
+var abi =  [{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "matchNumber",      "type": "uint256"    },    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
+  ]
 var choice;
 var waiting;
 var viewConsecutivewins;
+var takeprize = false;
+
 // function chọn sấp hoặc ngửa
 function sap(){ 
     choice = true;
-    $('#chon span').text('g Sấp');
+    $('#chon span').text(' Sấp');
 }
 
 function ngua(){
     choice = false;
     $('#chon span').text(' Ngửa');
 }
- 
+
+function takePrize(){
+    App.takeprize();
+}
+
 function flip(){
     console.log("beggin flip");
     App.filpnow();
@@ -23,7 +31,7 @@ App = {
     web3Provider: null,
     contract: null,
     pending: false,
-
+    transactionHash : null,
     init: function() {
     if (typeof web3 !== 'undefined') {
         App.web3Provider = web3.currentProvider;
@@ -38,46 +46,43 @@ App = {
     },
 
     initContract: function() {
-        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
-          ]);
-        App.contract = CoinflipContract.at("0xe7d3da690d456a0d4f581691a208a9eeebb7c558")
+        
+        App.contract = new web3.eth.Contract( abi,address,{});
+        $("#TakePrize").hide();
         setInterval(App.updateState, 1000);
         App.updateState();
+        
     },
 
     updateState: async function() {
         let contract = App.contract;
-        let coinbase = web3.eth.coinbase;
-        
+        let coinbase = await web3.eth.getCoinbase();
+
         web3.eth.getBalance(coinbase, function (err, result) { 
             if (!err) {
                 $("#account").text(coinbase);
-                $("#balance ").text( web3.fromWei(result.toNumber()));
+                $("#balance ").text(web3.utils.fromWei(result));
             }
             else console.error(err);
         });
 
-        contract.viewConsecutivewins((err, result) => {
-            if (!err) {
-                viewConsecutivewins = result.toNumber();
-                $("#wincount").text(result.toNumber());
-            }
-            else console.error(err);
-        });
+        contract.methods.viewConsecutivewins().call()
+        .then((value) =>{
+            viewConsecutivewins = value;
+            $("#wincount").text(value);
+        })
         
         if(viewConsecutivewins == 5){
-            contract.winPresent((e,r)=>{
-                console.log(r);
-            })
             viewConsecutivewins = 0;
+            $("#TakePrize").show();
         }
 
-        console.log(App.pending)
         if(!App.pending){
-            contract.viewResult((e,r)=>{
-                if( r ==  1 ){
+            contract.methods.viewResult().call()
+            .then((value) => {
+                if( value ==  1 ){
                     $("#sapngua").text("sấp");
-                }else if( r == 2 ){
+                }else if( value == 2 ){
                     $("#sapngua").text("ngửa");
                 }
             })
@@ -85,33 +90,38 @@ App = {
             $("#sapngua").text("Đợi trong giây lát");
         }
 
-        
-        // contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' })
-        // .on(
-        //     'data', function(event) {
-        //     console.log(event);
-        //   })
     },
 
     filpnow: async function() {
         App.pending = true;
         let contract = App.contract;
-        console.log("pening");
-        await contract.flip(choice,{ value: web3.toWei(0.00001, 'ether')},(e,r)=>{
-            console.log(r);
+        let coinbase = await web3.eth.getCoinbase();
+        
+        console.log("pening", App.coinbase);
+        await contract.methods.flip(choice).send(
+            {
+                from : coinbase,
+                value : 10000000
+            })
+        .then((receipt)=>{
+            console.log(receipt);
         })
         App.pending = false;
+    },
+
+    takeprize: async function(){
+        let contract = App.contract;
+        let coinbase = await web3.eth.getCoinbase();
+        await contract.methods.winPresent().send({
+            from : coinbase,
+        })
+        .then((value) => {
+            console.log(value);
+        })
+        $("#TakePrize").hide();
     }
     
 };
-
-// contract.closeflip({}, { fromBlock: 0, toBlock: 'latest' }).get((error, eventResult) => {
-        //     if (error)
-        //       console.log('Error in myEvent event handler: ' + error);
-        //     else
-        //       console.log('myEvent: ' + JSON.stringify(eventResult.args));
-        //   });
-        // console.log("contract", contract.events)
 
 $(function() {
     $(window).load(function() {
