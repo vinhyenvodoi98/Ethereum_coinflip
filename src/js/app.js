@@ -1,22 +1,25 @@
 
 var choice;
 var waiting;
-
+var viewConsecutivewins;
+var pending =false;
 // function chọn sấp hoặc ngửa
 function sap(){ 
+    pending = false;
     choice = true;
     $('#chon span').text(' Sấp');
 }
 
 function ngua(){
+    pending =false;
     choice = false;
     $('#chon span').text(' Ngửa');
 }
  
-function flip(){
-    waiting = true;
+async function flip(){
+    pending = false;
     console.log("beggin flip");
-    App.filpnow();
+    await App.filpnow();
 }
 // function 
 //set up web3
@@ -37,9 +40,9 @@ App = {
     },
 
     initContract: function() {
-        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
+        var CoinflipContract = web3.eth.contract([{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
           ]);
-        App.contract = CoinflipContract.at("0xc294e8ba73f1288e1b4687c0739987b6bebf5c15")
+        App.contract = CoinflipContract.at("0xe7d3da690d456a0d4f581691a208a9eeebb7c558")
         setInterval(App.updateState, 1000);
         App.updateState();
     },
@@ -58,38 +61,56 @@ App = {
 
         contract.viewConsecutivewins((err, result) => {
             if (!err) {
-              $("#wincount").text(result.toNumber());
+                viewConsecutivewins = result.toNumber();
+                $("#wincount").text(result.toNumber());
             }
             else console.error(err);
         });
+        
+        if(viewConsecutivewins == 5){
+            contract.winPresent((e,r)=>{
+                console.log(r);
+            })
+            viewConsecutivewins = 0;
+        }
 
-        contract.viewResult((e,r)=>{
-            if( r ==  1 ){
-                $("#sapngua").text("sấp");
-            }else if( r == 2 ){
-                $("#sapngua").text("ngửa");
-            }
-            // TODO try setup waiting
-            // if(waiting){
-            //     $("#sapngua").text("Hãy đợi trong giây lát ...");
-            // }
-        })
+        if(pending){
+            contract.viewResult((e,r)=>{
+                if( r ==  1 ){
+                    $("#sapngua").text("sấp");
+                }else if( r == 2 ){
+                    $("#sapngua").text("ngửa");
+                }
+            })
+        }else{
+            $("#sapngua").text("Đợi trong giây lát");
+        }
+
+        // console.log()
+
+        // contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' }).on(
+        //     'data', function(event) {
+        //     console.log(event);
+        //   })
     },
 
-    filpnow: function() {
+    filpnow: async function() {
         let contract = App.contract;
         console.log("pening");
-        contract.flip(choice, { value: web3.toWei(0.00001, 'ether')},(err,result) =>{
-            console.log(result)
-            if (result){
-                $("sapngua").text("Sấp");
-            }else{
-                $("sapngua").text("Ngửa");
-            }
+        await contract.flip(choice,{ value: web3.toWei(0.00001, 'ether')},(e,r)=>{
+            console.log(r);
         })
     }
     
 };
+
+// contract.closeflip({}, { fromBlock: 0, toBlock: 'latest' }).get((error, eventResult) => {
+        //     if (error)
+        //       console.log('Error in myEvent event handler: ' + error);
+        //     else
+        //       console.log('myEvent: ' + JSON.stringify(eventResult.args));
+        //   });
+        // console.log("contract", contract.events)
 
 $(function() {
     $(window).load(function() {
