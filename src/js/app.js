@@ -2,30 +2,27 @@
 var choice;
 var waiting;
 var viewConsecutivewins;
-var pending =false;
 // function chọn sấp hoặc ngửa
 function sap(){ 
-    pending = false;
     choice = true;
-    $('#chon span').text(' Sấp');
+    $('#chon span').text('g Sấp');
 }
 
 function ngua(){
-    pending =false;
     choice = false;
     $('#chon span').text(' Ngửa');
 }
  
-async function flip(){
-    pending = false;
+function flip(){
     console.log("beggin flip");
-    await App.filpnow();
+    App.filpnow();
 }
 // function 
 //set up web3
 App = {
     web3Provider: null,
     contract: null,
+    pending: false,
 
     init: function() {
     if (typeof web3 !== 'undefined') {
@@ -35,6 +32,7 @@ App = {
         App.web3Provider = new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/33067fd895d4482fa44cbe0f5049e96b');
     }
     web3 = new Web3(App.web3Provider);
+    pending = false;
 
     App.initContract();
     },
@@ -74,7 +72,8 @@ App = {
             viewConsecutivewins = 0;
         }
 
-        if(pending){
+        console.log(App.pending)
+        if(!App.pending){
             contract.viewResult((e,r)=>{
                 if( r ==  1 ){
                     $("#sapngua").text("sấp");
@@ -86,21 +85,22 @@ App = {
             $("#sapngua").text("Đợi trong giây lát");
         }
 
-        // console.log()
         
-        contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' })
-        .on(
-            'data', function(event) {
-            console.log(event);
-          })
+        // contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' })
+        // .on(
+        //     'data', function(event) {
+        //     console.log(event);
+        //   })
     },
 
     filpnow: async function() {
+        App.pending = true;
         let contract = App.contract;
         console.log("pening");
         await contract.flip(choice,{ value: web3.toWei(0.00001, 'ether')},(e,r)=>{
             console.log(r);
         })
+        App.pending = false;
     }
     
 };
