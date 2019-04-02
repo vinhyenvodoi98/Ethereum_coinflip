@@ -87,11 +87,12 @@ App = {
         }
 
         // console.log()
-
-        // contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' }).on(
-        //     'data', function(event) {
-        //     console.log(event);
-        //   })
+        
+        contract.events.closeflip({}, { fromBlock: 0, toBlock: 'latest' })
+        .on(
+            'data', function(event) {
+            console.log(event);
+          })
     },
 
     filpnow: async function() {
