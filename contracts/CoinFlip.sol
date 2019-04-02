@@ -3,6 +3,7 @@
 pragma solidity ^0.4.24;
 
 contract CoinFlip {
+    event closeflip(uint8 winorlose);
     uint256 public consecutiveWins;
     uint256 lastHash;
     uint256 FACTOR = 57896044618658097711785492504343953926634992332820282019728792003956564819968;
@@ -15,6 +16,7 @@ contract CoinFlip {
 
     // try to use other random algorithm
     function flip(bool _guess ) public payable {
+        
         winorlose = 0; // set new game
         // require(msg.value > ); //set require value
         uint256 blockValue = uint256(blockhash(block.number-1));
@@ -27,17 +29,26 @@ contract CoinFlip {
         uint256 coinFlip = blockValue / FACTOR;
         bool side = coinFlip == 1 ? true : false;
 
-        if(side){
-            winorlose = 1 ;  // 1 mean sap
-        }else{
-            winorlose = 2 ;  // 2 mean ngua
-        }
-
         if (side == _guess) {
             consecutiveWins++;
         } else {
             consecutiveWins = 0;
         }
+
+        if(side){ 
+            winorlose = 1;
+            emit closeflip (winorlose);
+        }else{
+            winorlose = 2;
+            emit closeflip (winorlose);
+        }
+    }
+
+    // if win have present
+    function winPresent() public{
+        require(consecutiveWins == 5);
+        consecutiveWins = 0;
+        msg.sender.transfer(address(this).balance);
     }
 
     // view result 
@@ -60,6 +71,4 @@ contract CoinFlip {
         require(msg.sender == owner);
         owner.transfer(address(this).balance);
     }
-
-
 }
