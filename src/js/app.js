@@ -1,5 +1,5 @@
-var address = '0x0d1fd2be10d5f6ffe4eb92c67eb30343e2aab0e3';
-var abi =  [{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "matchNumber",      "type": "uint256"    },    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
+var address = '0x6e2ade52f250df85684ef641e7655b5031a03db7';
+var abi = [{  "constant": true,  "inputs": [    {      "name": "",      "type": "address"    }  ],  "name": "winNumber",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "matchNumber",      "type": "uint256"    },    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
   ]
 var choice;
 var waiting;
@@ -18,12 +18,12 @@ function ngua(){
 }
 
 function takePrize(){
-    App.takeprize();
+    App.takePrize();
 }
 
 function flip(){
     console.log("beggin flip");
-    App.filpnow();
+    App.filpNow();
 }
 // function 
 //set up web3
@@ -32,6 +32,7 @@ App = {
     contract: null,
     pending: false,
     transactionHash : null,
+    
     init: function() {
     if (typeof web3 !== 'undefined') {
         App.web3Provider = web3.currentProvider;
@@ -46,8 +47,8 @@ App = {
     },
 
     initContract: function() {
-        
         App.contract = new web3.eth.Contract( abi,address,{});
+        // App.coinbase = await web3.eth.getCoinbase();
         $("#TakePrize").hide();
         setInterval(App.updateState, 1000);
         App.updateState();
@@ -57,6 +58,7 @@ App = {
     updateState: async function() {
         let contract = App.contract;
         let coinbase = await web3.eth.getCoinbase();
+        App.coinbase = coinbase ;
 
         web3.eth.getBalance(coinbase, function (err, result) { 
             if (!err) {
@@ -92,26 +94,42 @@ App = {
 
     },
 
-    filpnow: async function() {
+    watchEvent: function() {
+        let contract = App.contract;
+        contract.events.closeflip({
+            filter: { 
+                matchNumber: [12,15]
+            },
+            fromBlock : 0
+        },(error, event) => { 
+            // console.log ( event );
+        })
+        .on('data', (event)=>{
+            console.log ( event );
+        })
+    },
+
+    filpNow: async function() {
         App.pending = true;
         let contract = App.contract;
-        let coinbase = await web3.eth.getCoinbase();
+        let coinbase = App.coinbase;
         
-        console.log("pening", App.coinbase);
         await contract.methods.flip(choice).send(
             {
                 from : coinbase,
                 value : 10000000
             })
         .then((receipt)=>{
-            console.log(receipt);
+            // console.log(receipt);
+            // App.transactionHash = receipt.transactionHash;
+            // console.log(transactionHash);
         })
         App.pending = false;
     },
 
-    takeprize: async function(){
+    takePrize: async function(){
         let contract = App.contract;
-        let coinbase = await web3.eth.getCoinbase();
+        let coinbase = App.coinbase;
         await contract.methods.winPresent().send({
             from : coinbase,
         })
