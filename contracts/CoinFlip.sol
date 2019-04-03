@@ -2,18 +2,23 @@
 
 pragma solidity ^0.4.24;
 
+
 contract CoinFlip {
     //add matchNumber to finter match
+
     event closeflip(uint256 matchNumber, uint8 winorlose);
+
+    mapping(address => uint) public winNumber;
+
     uint256 public consecutiveWins;
     uint256 lastHash;
     uint256 FACTOR = 57896044618658097711785492504343953926634992332820282019728792003956564819968;
     address owner = 0x4C637fC36ecA2d02d5214b53c0aEc272f31F7E53;
     uint8 winorlose = 0;
     uint256 matchNumber = 0;
-
+ 
     constructor () public {
-        consecutiveWins = 0;
+        winNumber[msg.sender] = 0;
     }
 
     // try to use other random algorithm
@@ -32,9 +37,9 @@ contract CoinFlip {
         bool side = coinFlip == 1 ? true : false;
 
         if (side == _guess) {
-            consecutiveWins++;
+            winNumber[msg.sender] +=1 ;
         } else {
-            consecutiveWins = 0;
+            winNumber[msg.sender] = 0;
         }
 
         if(side){ 
@@ -48,8 +53,8 @@ contract CoinFlip {
 
     // if win have present
     function winPresent() public{
-        require(consecutiveWins == 5);
-        consecutiveWins = 0;
+        require( winNumber[msg.sender] == 5);
+        winNumber[msg.sender] = 0;
         msg.sender.transfer(address(this).balance);
     }
 
@@ -60,7 +65,7 @@ contract CoinFlip {
 
     // view how many time you win
     function viewConsecutivewins() public view returns(uint256) {
-        return consecutiveWins;
+        return winNumber[msg.sender];
     }
 
     // ViewBalance of this contract
