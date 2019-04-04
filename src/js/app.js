@@ -1,6 +1,7 @@
-var address = '0x0d1fd2be10d5f6ffe4eb92c67eb30343e2aab0e3';
-var abi =  [{  "constant": true,  "inputs": [],  "name": "consecutiveWins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "inputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "constructor"},{  "anonymous": false,  "inputs": [    {      "indexed": false,      "name": "matchNumber",      "type": "uint256"    },    {      "indexed": false,      "name": "winorlose",      "type": "uint8"    }  ],  "name": "closeflip",  "type": "event"},{  "constant": false,  "inputs": [    {      "name": "_guess",      "type": "bool"    }  ],  "name": "flip",  "outputs": [],  "payable": true,  "stateMutability": "payable",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "winPresent",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewResult",  "outputs": [    {      "name": "",      "type": "uint8"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewConsecutivewins",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": true,  "inputs": [],  "name": "viewBalance",  "outputs": [    {      "name": "",      "type": "uint256"    }  ],  "payable": false,  "stateMutability": "view",  "type": "function"},{  "constant": false,  "inputs": [],  "name": "collectCoin",  "outputs": [],  "payable": false,  "stateMutability": "nonpayable",  "type": "function"}
-  ]
+// var address = '0x634a5081e1923d7d3989deb285d8bf4ad357f39d';
+var address = '0xc13d9af53dd4ed90b44e98b2090cd4033d2a17f0';
+var abi =  [{	"constant": false,	"inputs": [],	"name": "collectCoin",	"outputs": [],	"payable": false,	"stateMutability": "nonpayable",	"type": "function"},{	"constant": false,	"inputs": [		{			"name": "_guess",			"type": "bool"		}	],	"name": "flip",	"outputs": [],	"payable": true,	"stateMutability": "payable",	"type": "function"},{	"constant": false,	"inputs": [],	"name": "winPresent",	"outputs": [],	"payable": false,	"stateMutability": "nonpayable",	"type": "function"},{	"inputs": [],	"payable": false,	"stateMutability": "nonpayable",	"type": "constructor"},{	"anonymous": false,	"inputs": [		{			"indexed": false,			"name": "matchNumber",			"type": "uint256"		},		{			"indexed": false,			"name": "winorlose",			"type": "uint256"		}	],	"name": "closeflip",	"type": "event"},{	"constant": true,	"inputs": [],	"name": "viewBalance",	"outputs": [		{			"name": "",			"type": "uint256"		}	],	"payable": false,	"stateMutability": "view",	"type": "function"},{	"constant": true,	"inputs": [],	"name": "viewConsecutivewins",	"outputs": [		{			"name": "",			"type": "uint256"		}	],	"payable": false,	"stateMutability": "view",	"type": "function"},{	"constant": true,	"inputs": [],	"name": "viewResult",	"outputs": [		{			"name": "",			"type": "uint256"		}	],	"payable": false,	"stateMutability": "view",	"type": "function"},{	"constant": true,	"inputs": [		{			"name": "",			"type": "address"		}	],	"name": "winloseNumber",	"outputs": [		{			"name": "",			"type": "uint256"		}	],	"payable": false,	"stateMutability": "view",	"type": "function"},{	"constant": true,	"inputs": [		{			"name": "",			"type": "address"		}	],	"name": "winNumber",	"outputs": [		{			"name": "",			"type": "uint256"		}	],	"payable": false,	"stateMutability": "view",	"type": "function"}
+]
 var choice;
 var waiting;
 var viewConsecutivewins;
@@ -18,12 +19,12 @@ function ngua(){
 }
 
 function takePrize(){
-    App.takeprize();
+    App.takePrize();
 }
 
 function flip(){
     console.log("beggin flip");
-    App.filpnow();
+    App.filpNow();
 }
 // function 
 //set up web3
@@ -32,6 +33,7 @@ App = {
     contract: null,
     pending: false,
     transactionHash : null,
+    
     init: function() {
     if (typeof web3 !== 'undefined') {
         App.web3Provider = web3.currentProvider;
@@ -46,8 +48,10 @@ App = {
     },
 
     initContract: function() {
-        
-        App.contract = new web3.eth.Contract( abi,address,{});
+        App.contract = new web3.eth.Contract( abi,address,{
+            gasPrice: '200000000'
+        });
+        console.log(App.contract.options.jsonInterface);
         $("#TakePrize").hide();
         setInterval(App.updateState, 1000);
         App.updateState();
@@ -57,6 +61,7 @@ App = {
     updateState: async function() {
         let contract = App.contract;
         let coinbase = await web3.eth.getCoinbase();
+        App.coinbase = coinbase ;
 
         web3.eth.getBalance(coinbase, function (err, result) { 
             if (!err) {
@@ -66,7 +71,9 @@ App = {
             else console.error(err);
         });
 
-        contract.methods.viewConsecutivewins().call()
+        contract.methods.viewConsecutivewins().call({
+            from : App.coinbase
+        })
         .then((value) =>{
             viewConsecutivewins = value;
             $("#wincount").text(value);
@@ -78,7 +85,9 @@ App = {
         }
 
         if(!App.pending){
-            contract.methods.viewResult().call()
+            contract.methods.viewResult().call({
+                from : App.coinbase
+            })
             .then((value) => {
                 if( value ==  1 ){
                     $("#sapngua").text("sấp");
@@ -89,29 +98,44 @@ App = {
         }else{
             $("#sapngua").text("Đợi trong giây lát");
         }
-
     },
 
-    filpnow: async function() {
+    watchEvent: function() {
+        let contract = App.contract;
+        contract.events.closeflip({
+            filter: { 
+                matchNumber: [12,15]
+            },
+            fromBlock : 0
+        },(error, event) => { 
+            // console.log ( event );
+        })
+        .on('data', (event)=>{
+            console.log ( event );
+        })
+    },
+
+    filpNow: async function() {
         App.pending = true;
         let contract = App.contract;
-        let coinbase = await web3.eth.getCoinbase();
+        let coinbase = App.coinbase;
         
-        console.log("pening", App.coinbase);
         await contract.methods.flip(choice).send(
             {
                 from : coinbase,
-                value : 10000000
+                value : '1000000000'
             })
         .then((receipt)=>{
-            console.log(receipt);
+            // console.log(receipt);
+            // App.transactionHash = receipt.transactionHash;
+            // console.log(transactionHash);
         })
         App.pending = false;
     },
 
-    takeprize: async function(){
+    takePrize: async function(){
         let contract = App.contract;
-        let coinbase = await web3.eth.getCoinbase();
+        let coinbase = App.coinbase;
         await contract.methods.winPresent().send({
             from : coinbase,
         })
