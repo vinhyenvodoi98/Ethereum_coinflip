@@ -1,7 +1,11 @@
 # Play CoinFlip v1.0
 
 **Introduction**
-In this game you will betting 0.0001 ether to play and choice HEADS and TAILS if you correct outcome 10 times you can take 1 ether
+In this game you will betting 0.0001 ether to play and choice HEADS and TAILS if you correct outcome 5 times you can take 1 ether
+
+**App Interface**
+
+![App_interface](https://github.com/vinhyenvodoi98/Ethereum_coinflip/blob/master/image/win.jpg)
 
 **Install**
 
